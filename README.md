@@ -20,6 +20,8 @@ qmake
 make release
 ```
 
+Compiled binaries with all dependencies are available in [releases tab](https://github.com/mugiseyebrows/mugi-ffmpeg/releases)
+
 ### Linux (Ubuntu)
 
 In terminal run

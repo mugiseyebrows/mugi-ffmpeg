@@ -34,7 +34,6 @@ HEADERS += \
 SOURCES += \
     src/action.cpp \
     src/arrangefilter.cpp \
-    src/automate_p.cpp \
     src/automation.cpp \
     src/deletefilter.cpp \
     src/estimator.cpp \
