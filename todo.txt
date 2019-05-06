@@ -1,0 +1,7 @@
+improve time estimate
+drag and drop
+refactor options
+many-to-many fuzzy search (split to words, compare with scores)
+file / directory mode
+save to bat / bash script
+settings window (video/audio/subtitles exts)
