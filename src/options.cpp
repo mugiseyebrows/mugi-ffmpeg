@@ -45,16 +45,19 @@ void Options::syncMaps(SourcesModel* sourcesModel)
     ts[SourcesModel::Audio] = "a";
     ts[SourcesModel::Subtitles] = "s";
 
-    int video = 0;
-    int audio = 0;
-
-    for(int i=0;i<sourcesModel->rowCount();i++) {
-        SourcesModel::Type st = sourcesModel->type(i);
-        add(t,"-map",QString("%1:%2").arg(i).arg(ts[st]));
-        if (st == SourcesModel::Video)
-            video++;
-        if (st == SourcesModel::Audio)
-            audio++;
+    if (sourcesModel->rowCount() < 2) {
+        remove(t, "-map");
+    } else {
+        int video = 0;
+        int audio = 0;
+        for(int i=0;i<sourcesModel->rowCount();i++) {
+            SourcesModel::Type st = sourcesModel->type(i);
+            add(t,"-map",QString("%1:%2").arg(i).arg(ts[st]));
+            if (st == SourcesModel::Video)
+                video++;
+            if (st == SourcesModel::Audio)
+                audio++;
+        }
     }
 
 }
