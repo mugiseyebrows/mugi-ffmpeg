@@ -1,7 +1,7 @@
 
 IDI_ICON1               ICON    DISCARDABLE     "mugi-ffmpeg.ico"
 
-#include "windows.h"
+#include <windows.h>
 #include "src/version.h"
 
 #define VER_PRODUCTVERSION          APP_VERSION_INT
