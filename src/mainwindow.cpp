@@ -22,8 +22,6 @@
 
 #include "arrangefilter.h"
 
-#include "lit.h"
-
 #include "sourceitemdelegate.h"
 
 #include <QMessageBox>
@@ -80,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ArrangeFilter* arrange = new ArrangeFilter();
     arrange->setView(ui->tasks);
-    arrange->setRoles(Lit::il(Qt::EditRole, TasksModel::Id, TasksModel::Progress, TasksModel::Duration));
+    arrange->setRoles({Qt::EditRole, TasksModel::Id, TasksModel::Progress, TasksModel::Duration});
     arrange->setEnabled(true);
 
     DeleteFilter* delete2 = new DeleteFilter(ui->tasks);

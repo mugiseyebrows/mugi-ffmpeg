@@ -1,21 +1,20 @@
 #include "fileext.h"
 
-#include "lit.h"
 #include <QFileInfo>
 
 QStringList FileExt::videoExts()
 {
-    return Lit::sl(".mkv",".mp4",".ts",".avi",".wmv",".mpg");
+    return {".mkv",".mp4",".ts",".avi",".wmv",".mpg"};
 }
 
 QStringList FileExt::audioExts()
 {
-    return Lit::sl(".mka",".mp3",".flac",".aac",".ac3");
+    return {".mka",".mp3",".flac",".aac",".ac3"};
 }
 
 QStringList FileExt::subtitlesExts()
 {
-    return Lit::sl(".srt",".ass",".ssa");
+    return {".srt",".ass",".ssa"};
 }
 
 bool FileExt::isVideo(const QString &path)
