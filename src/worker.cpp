@@ -4,8 +4,6 @@
 #include <QDir>
 #include <QDebug>
 
-#include "lit.h"
-
 #include <QTextCodec>
 
 Worker::Worker(QObject *parent) :
@@ -99,7 +97,7 @@ void Worker::onProbe(QString path)
     QProcess p;
 
     QString cmd = mProbe;
-    QStringList args = Lit::sl("-i",path);
+    QStringList args = {"-i",path};
 
     //p.setReadChannel(QProcess::StandardError);
 

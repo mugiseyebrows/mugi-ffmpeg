@@ -2,6 +2,7 @@
 #define SOURCESMODEL_H
 
 #include <QStandardItemModel>
+#include <QMap>
 
 class SourcesModel : public QStandardItemModel
 {
@@ -28,15 +29,16 @@ public:
 
     QStringList files() const;
 
-    QList<QStringList> tasks(const QStringList &checked,
+    QList<QStringList> tasks(const QList<int> &checked,
                              const QStringList& options,
                              const QString& output) const;
 
     void appendRow(Type type, const QString &path);
+    void appendRow(Type type, const QString &path, const QStringList &files);
 
     static QStringList findFiles(const QString &path, const QStringList &exts);
     static QStringList findFiles(const QString& path, Type type);
-    static QMap<QString, QString> mapBaseNamePath(const QStringList &files);
+    //static QMap<QString, QString> mapBaseNamePath(const QStringList &files);
 
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
     bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex());
@@ -45,10 +47,16 @@ public:
 
     Type type(int row);
 
+
+
 protected:
-    QList< QMap<QString,QString> > mFiles;
 
+    QList<QStringList> mFiles;
+    QList<QMap<int,int> > mMapping;
+    QList<int> mIndexes;
 
+    void updateMapping();
+    void updateIndexes();
 signals:
     void sourceRemoved();
 

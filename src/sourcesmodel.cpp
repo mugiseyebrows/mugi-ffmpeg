@@ -1,11 +1,11 @@
 #include "sourcesmodel.h"
 
-
 #include <QFileInfo>
 #include <QDir>
 #include <QDebug>
 
 #include "fileext.h"
+#include "namematcher.h"
 
 SourcesModel::SourcesModel(QObject *parent) :
     QStandardItemModel(0,2,parent)
@@ -28,6 +28,7 @@ QStringList SourcesModel::findFiles(const QString& path, const QStringList& exts
             }
         }
     }
+    qSort(result.begin(), result.end());
     return result;
 }
 
@@ -41,31 +42,23 @@ QStringList SourcesModel::findFiles(const QString& path, Type type) {
     return QStringList();
 }
 
-QMap<QString,QString> SourcesModel::mapBaseNamePath(const QStringList& files) {
-    QMap<QString,QString> res;
-    QString path;
-    foreach(path,files) {
-        res[QFileInfo(path).completeBaseName()] = path;
-    }
-    return res;
-}
-
-
 bool SourcesModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     for(int i=0;i<count;i++) {
         mFiles.removeAt(row);
     }
     bool ret = QStandardItemModel::removeRows(row,count,parent);
-    emit sourceRemoved();
+
     qDebug() << "removeRows";
+    updateMapping();
+    emit sourceRemoved();
     return ret;
 }
 
 bool SourcesModel::insertRows(int row, int count, const QModelIndex &parent)
 {
     for (int i=0;i<count;i++) {
-        mFiles.insert(row,QMap<QString,QString>());
+        mFiles.insert(row,QStringList());
     }
     return QStandardItemModel::insertRows(row,count,parent);
 }
@@ -100,61 +93,94 @@ void SourcesModel::addSource(SourcesModel::Type type, const QString &path)
     appendRow(type, path);
 }
 
-void SourcesModel::appendRow(Type type, const QString& path) {
+void SourcesModel::appendRow(Type type, const QString& path, const QStringList& files) {
     int row = rowCount();
     insertRow(row);
     setData(this->index(rowCount()-1,ColumnType),type);
     setData(this->index(rowCount()-1,ColumnPath),path);
-    mFiles[row] = mapBaseNamePath(findFiles(path,type));
+    mFiles[row] = files;
+    updateMapping();
+}
+
+void SourcesModel::appendRow(Type type, const QString& path) {
+
+    QStringList files = findFiles(path,type);
+    appendRow(type, path, files);
+}
+
+QMap<int,int> toMap(const QList<QPair<int,int> >& vs) {
+    QMap<int,int> result;
+    for(int i=0;i<vs.size();i++) {
+        result[vs[i].first] = vs[i].second;
+    }
+    return result;
+}
+
+void SourcesModel::updateMapping() {
+    mMapping.clear();
+    for(int i=1;i<mFiles.size();i++) {
+        mMapping.append(toMap(NameMatcher::match(mFiles[0], mFiles[i])));
+    }
+    updateIndexes();
+}
+
+void SourcesModel::updateIndexes() {
+
+    mIndexes.clear();
+
+    if (mFiles.size() == 0) {
+        return;
+    } else if (mFiles.size() == 1) {
+        for(int i=0;i<mFiles[0].size();i++) {
+            mIndexes << i;
+        }
+    } else {
+        for(int i=0;i<mFiles[0].size();i++) {
+            bool ok = true;
+            for(int j=0;j<mMapping.size();j++) {
+                if (!mMapping[j].contains(i)) {
+                    ok = false;
+                }
+            }
+            if (ok) {
+                mIndexes << i;
+            }
+        }
+    }
+
 }
 
 QStringList SourcesModel::files() const
 {
-    if (mFiles.size() == 0)
-        return QStringList();
-
-    QStringList keys = mFiles[0].keys();
-    if (mFiles.size() == 1) {
-        qSort(keys);
-        return keys;
-    } else {
-        qSort(keys);
-        QStringList res;
-        QString key;
-
-        foreach(key,keys) {
-            bool skip = false;
-            for(int i=1;i<mFiles.size();i++) {
-                if (!mFiles[i].contains(key)) {
-                    skip = true;
-                    break;
-                }
-            }
-            if (!skip)
-                res << key;
-        }
-
-        return res;
+    QStringList result;
+    foreach (int index, mIndexes) {
+        result << QFileInfo(mFiles[0][index]).baseName();
     }
-
-    return QStringList();
+    return result;
 }
 
-QList<QStringList> SourcesModel::tasks(const QStringList &checked,
+QString replace(const QString& subj, const QString& needle, const QString& repl) {
+    QString subj_ = subj;
+    subj_.replace(needle, repl);
+    return subj_;
+}
+
+QList<QStringList> SourcesModel::tasks(const QList<int> &checked,
                                        const QStringList &options,
                                        const QString &output) const
 {
     QList<QStringList> res;
-    QString item;
-    foreach(item,checked) {
+    foreach (int i, checked) {
+        int index = mIndexes[i];
         QStringList cmd;
-        QString output_ = output;
         cmd << "ffmpeg";
-        for(int i=0;i<mFiles.size();i++) {
-            cmd << "-i" << QDir::toNativeSeparators(mFiles[i][item]);
+        cmd << "-i" << QDir::toNativeSeparators(mFiles[0][index]);
+        for(int j=0;j<mMapping.size();j++) {
+            int index2 = mMapping[j][index];
+            cmd << "-i" << QDir::toNativeSeparators(mFiles[j+1][index2]);
         }
         cmd << options;
-        cmd << output_.replace("%name%",item);
+        cmd << replace(output, "%name%", QFileInfo(mFiles[0][index]).baseName());
         res << cmd;
     }
     return res;

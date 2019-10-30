@@ -213,12 +213,12 @@ void MainWindow::on_enqueue_clicked() {
 
     options = nonEmpty(options);
 
-    QStringList checked;
+    QList<int> checked;
 
     for (int i=0;i<ui->files->count();i++) {
         QListWidgetItem* item = ui->files->item(i);
         if (item->checkState() == Qt::Checked)
-            checked << item->text();
+            checked << i;
     }
 
     if (checked.isEmpty()) {

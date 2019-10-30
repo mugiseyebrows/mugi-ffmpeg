@@ -29,7 +29,7 @@ HEADERS += \
     src/tasksmodel.h \
     src/version.h \
     src/worker.h \
-    src/lit.h
+    src/namematcher.h
 
 SOURCES += \
     src/action.cpp \
@@ -52,7 +52,7 @@ SOURCES += \
     src/taskitemdelegate.cpp \
     src/tasksmodel.cpp \
     src/worker.cpp \
-    src/lit.cpp
+    src/namematcher.cpp
 
 FORMS += \
     src/mainwindow.ui
